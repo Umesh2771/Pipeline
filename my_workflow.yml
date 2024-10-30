@@ -1,0 +1,61 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main  # Triggers the pipeline on pushes to the main branch
+  pull_request:
+    branches:
+      - main  # Triggers the pipeline on pull requests to main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'  # Specify Python version
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run linting
+        run: |
+          pip install flake8
+          flake8 .  # Adjust to specify which directories/files to check
+
+      - name: Run tests
+        run: |
+          pip install pytest
+          pytest
+
+  deploy:
+    needs: test  # Run deploy only if the test job succeeds
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Deploy to Production
+        run: |
+          # Add deployment script here, e.g., upload to S3, deploy to Kubernetes, etc.
+          echo "Deployment step goes here"
